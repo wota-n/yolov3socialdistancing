@@ -64,8 +64,7 @@ while True:
 
     #resize frame and detect ONLY people/humans
     frame = imutils.resize(frame, width=700)
-    results = detect_people(frame, net, ln,
-        personIdx=LABELS.index("person"))
+    results = detect_people(frame, net, ln, personIdx=LABELS.index("person"))
 
     #initialize the set of indexes that violate the minimum social
     #distance
@@ -129,14 +128,13 @@ while True:
     #if an output video file path is supplied
     #and video writer is not init, do now    
     if args["output"] != "" and writer is None:
-        #init video writer
-        fourcc =  cv2.VideoWriter_fourcc(*"MJPG")
-        writer = cv2.VideoWriter(args["output"], fourcc, 25,
-            (frame.shape[1], frame.shape[0]), True) 
+        # initialize the video writer
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        writer = cv2.VideoWriter(args["output"], fourcc, 25, (frame.shape[1], frame.shape[0]), True)
 
-        #if the video writer is not None, write frame to output
-        #video file
+    # if the video writer is not None, write the frame to the output video file
     if writer is not None:
+        print("[INFO] writing stream to output")
         writer.write(frame)
 
 
