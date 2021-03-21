@@ -7,6 +7,7 @@ import argparse
 import imutils
 import cv2
 import os
+import time
 
 #construct arugment parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -28,6 +29,7 @@ configPath = os.path.sep.join([config.MODEL_PATH, "yolov3.cfg"])
 
 #load YOLO object detector trained on COCO dataset (contains 80 classes)
 print ("[INFO] loading YOLO from disk...")
+tic = time.perf_counter()
 net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 
 #check for GPU usage
@@ -55,6 +57,9 @@ while True:
     #if no frame is grabbed, means video is finished
     #therefore we break
     if not grabbed:
+        toc = time.perf_counter()
+
+        print(f"Video processing took {toc - tic:0.4f} seconds")
         break
 
     #resize frame and detect ONLY people/humans
@@ -121,7 +126,7 @@ while True:
         if key == ord("q"):
             break
 
-    #if an output video file path is suipplied
+    #if an output video file path is supplied
     #and video writer is not init, do now    
     if args["output"] != "" and writer is None:
         #init video writer
