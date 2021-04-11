@@ -13,16 +13,15 @@ def detect_people(frame, net, ln, personIdx=0): #personIdx to filter out all obj
     #construct a blob from input from followed by performing a forward
     #pass of the YOLO object detector, creating the bounidng boxes
     #and assosciated probabilities. blobs: https://www.pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
-    blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416,416),
-        swapRB=True, crop=False)
+    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
     layerOutputs = net.forward(ln)
 
     #initialize lists of detected bounding boxes, centroids and 
     #confidence in that order
-    boxes=[]
-    centroids=[]
-    confidences=[]
+    boxes = []
+    centroids = []
+    confidences = []
 
     #loop over each layer output
     for output in layerOutputs:
@@ -44,7 +43,8 @@ def detect_people(frame, net, ln, personIdx=0): #personIdx to filter out all obj
                 #and height
                 
                 box = detection[0:4] * np.array([W, H, W, H])
-                (centerX, centerY, width, height) = box.astype("int") #astype: https://www.geeksforgeeks.org/python-pandas-dataframe-astype/
+                (centerX, centerY, width, height) = box.astype("int") 
+                #astype: https://www.askpython.com/python/built-in-methods/python-astype
 
                 #use center (x, y)- coordinates to derive the top
                 #and left corner of bounding box
@@ -59,12 +59,12 @@ def detect_people(frame, net, ln, personIdx=0): #personIdx to filter out all obj
 
     #applying non-maxima suppression to suppress weak and overlapping
     #bounding boxes cv2.dnn.NMSBoxes is a built in method from OpenCV
-    idxs = cv2.dnn.NMSBoxes(boxes, confidences, MIN_CONF, NMS_THRESH)
+    nms_detect = cv2.dnn.NMSBoxes(boxes, confidences, MIN_CONF, NMS_THRESH)
 
     #ensure at least one detection exists
-    if len (idxs) > 0:
+    if len(nms_detect) > 0:
         #loop over the indexes we are keeping
-        for i in idxs.flatten():
+        for i in nms_detect.flatten():
             #extract bounding box coordinates
             (x, y) = (boxes[i][0], boxes[i][1])
             (w, h) = (boxes[i][2], boxes[i][3])
@@ -75,7 +75,7 @@ def detect_people(frame, net, ln, personIdx=0): #personIdx to filter out all obj
             r = (confidences[i], (x, y, x + w, y+h), centroids[i])
             results.append(r)
 
-        # return the list of results
-        return results
+    # return the list of results
+    return results
             
                 
