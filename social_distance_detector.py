@@ -7,15 +7,23 @@ import argparse
 import imutils
 import cv2
 import os
+import time
+import statistics
 
 #construct arugment parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--input', type=str, default='', 
-    help="path to (optional) input video file")
+    help="(Optional) Path to  input video file. If not provided, available webcam is used instead.")
+
 ap.add_argument('-o', '--output', type=str, default='', 
-    help="path to (optional) output video file")
+    help="Gives video file name. Please include '.mp4' at the end.", required=True)
+
 ap.add_argument('-d', '--display', type=int, default=1, 
-    help="whether or not output frame should be displayed")
+    help="Display video processed. Default is enabled.")
+
+ap.add_argument('-md', '--MIN_DISTANCE', type=int, default=50, 
+    help="Social Distance Policy. Default value 50")
+
 args = vars(ap.parse_args())
 
 #load COCO class labels the YOLO model was trained on
@@ -28,6 +36,7 @@ configPath = os.path.sep.join([config.MODEL_PATH, "yolov3.cfg"])
 
 #load YOLO object detector trained on COCO dataset (contains 80 classes)
 print ("[INFO] loading YOLO from disk...")
+tic = time.perf_counter()
 net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 
 #check for GPU usage
@@ -50,21 +59,25 @@ writer=None
 while True:
     #read next frame from the file
     (grabbed, frame) = vs.read()
-    print("[INFO] processing video")
 
     #if no frame is grabbed, means video is finished
     #therefore we break
     if not grabbed:
+        toc = time.perf_counter()
+
+        print(f"Video processing took {toc - tic:0.4f} seconds")
+        print(f"Max number of violations detected: {max(violate)}")
+        print(f"Median number of violations detected: {statistics.median(violate)}")
         break
 
     #resize frame and detect ONLY people/humans
     frame = imutils.resize(frame, width=700)
-    results = detect_people(frame, net, ln,
-        personIdx=LABELS.index("person"))
+    results = detect_people(frame, net, ln, personIdx=LABELS.index("person"))
 
     #initialize the set of indexes that violate the minimum social
     #distance
     violate = set()
+    # violate_count = 0
 
     #ensure the detection is of at least TWO persons
     #this is required for the system to compute the pairwise distance maps
@@ -80,7 +93,8 @@ while True:
                 #check to see if distance between any two
                 #centroid pairs is less than configured number
                 #of pixels
-                if D[i, j] < config.MIN_DISTANCE:
+                # if D[i, j] < config.MIN_DISTANCE:
+                if D[i, j] < args["MIN_DISTANCE"]:
                     #update violation set with index of
                     #centroid pairs
                     violate.add(i)
@@ -109,6 +123,9 @@ while True:
     text = "Detected Violations: {}".format(len(violate))
     cv2.putText(frame, text, (10, frame.shape[0] - 25),
         cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0,0,255), 3)
+    
+    # if violate_count < len(violate):
+    #     violate_count = violate
         
     #check to see if output frame should be displayed to
     #screen
@@ -121,17 +138,16 @@ while True:
         if key == ord("q"):
             break
 
-    #if an output video file path is suipplied
+    #if an output video file path is supplied
     #and video writer is not init, do now    
     if args["output"] != "" and writer is None:
-        #init video writer
-        fourcc =  cv2.VideoWriter_fourcc(*"MJPG")
-        writer = cv2.VideoWriter(args["output"], fourcc, 25,
-            (frame.shape[1], frame.shape[0]), True) 
+        # initialize the video writer
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        writer = cv2.VideoWriter(args["output"], fourcc, 25, (frame.shape[1], frame.shape[0]), True)
 
-        #if the video writer is not None, write frame to output
-        #video file
+    # if the video writer is not None, write the frame to the output video file
     if writer is not None:
+        print("[INFO] processing video")
         writer.write(frame)
 
 
