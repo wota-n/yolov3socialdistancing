@@ -19,10 +19,10 @@ ap.add_argument('-o', '--output', type=str, default='',
     help="Gives video file name. Please include '.mp4' at the end.", required=True)
 
 ap.add_argument('-d', '--display', type=int, default=1, 
-    help="Display video processed. Default is enabled.")
+    help="Display video processed. Default is enabled. Change to 0 to disable")
 
 ap.add_argument('-md', '--MIN_DISTANCE', type=int, default=50, 
-    help="Social Distance Policy. Default value 50")
+    help="Social Distance Policy. Default value 50. Roughly 2 meters depending on angle")
 
 args = vars(ap.parse_args())
 
@@ -51,7 +51,7 @@ ln = net.getLayerNames()
 ln = [ln[i[0] - 1 ] for i in net.getUnconnectedOutLayers()]
 
 #initialize the video stream and pointer to output video file
-print("[INFO] accessing video stream...")
+print("[INFO] getting video stream...")
 vs = cv2.VideoCapture(args["input"] if args["input"] else 0)
 writer=None
 
@@ -68,6 +68,15 @@ while True:
         print(f"Video processing took {toc - tic:0.4f} seconds")
         print(f"Max number of violations detected: {max(violate)}")
         print(f"Median number of violations detected: {statistics.median(violate)}")
+        print(f"Mean number of violations detected: {statistics.mean(violate)}")
+        
+        currentTime = time.strftime("log%Y%m%d-%H%M%S")
+        f = open( currentTime + '.txt', 'w')
+        f.write(f"Video processing took {toc - tic:0.4f} seconds\n")
+        f.write(f"Max number of violations detected: {max(violate)}\n")
+        f.write(f"Median number of violations detected: {statistics.median(violate)}")
+        f.write(f"Mean number of violations detected: {statistics.mean(violate)}")
+        f.close()
         break
 
     #resize frame and detect ONLY people/humans
