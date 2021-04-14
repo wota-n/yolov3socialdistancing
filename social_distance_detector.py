@@ -69,13 +69,18 @@ while True:
         print(f"Max number of violations detected: {max(violate)}")
         print(f"Median number of violations detected: {statistics.median(violate)}")
         print(f"Mean number of violations detected: {statistics.mean(violate)}")
+        print("The violate set values are as follow: ")
+        print(violate)
         
+        #File processing
         currentTime = time.strftime("log%Y%m%d-%H%M%S")
         f = open( currentTime + '.txt', 'w')
         f.write(f"Video processing took {toc - tic:0.4f} seconds\n")
         f.write(f"Max number of violations detected: {max(violate)}\n")
         f.write(f"Median number of violations detected: {statistics.median(violate)}")
         f.write(f"Mean number of violations detected: {statistics.mean(violate)}")
+        f.write("The violate set values are as follow: ")
+        f.write(str(violate))
         f.close()
         break
 
