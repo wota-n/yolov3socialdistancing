@@ -11,5 +11,5 @@ USE_GPU = True
 
 #define min safe distance that two people can be
 # from each other
-MIN_DISTANCE = 50
+# MIN_DISTANCE = 50
 
